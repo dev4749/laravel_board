@@ -33,6 +33,7 @@ class RouteServiceProvider extends ServiceProvider
         //
 
         parent::boot();
+        Route::model('post', \App\Post::class);
     }
 
     /**

@@ -40,7 +40,12 @@ return [
             'channels' => ['single'],
             'ignore_exceptions' => false,
         ],
-
+        'sql' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/sql.log'),
+            'level' => 'debug',
+            'days' => 14,
+        ],
         'single' => [
             'driver' => 'single',
             'path' => storage_path('logs/laravel.log'),

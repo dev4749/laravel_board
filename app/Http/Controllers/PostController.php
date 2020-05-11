@@ -2,20 +2,29 @@
 
 namespace App\Http\Controllers;
 
+use Brick\Math\BigInteger;
 use Illuminate\Http\Request;
+use App\Http\Service\PostService;
+use Illuminate\Support\Facades\Gate;
 
 class PostController extends Controller
 {
+    private $postService;
+
+    public function __construct()
+    {
+        $this->middleware('auth')->except('index', 'show');
+        $this->postService = new PostService;
+    }
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(String $category)
     {
-        //
+        return $this->postService->index($category);
     }
-
     /**
      * Show the form for creating a new resource.
      *
@@ -23,7 +32,8 @@ class PostController extends Controller
      */
     public function create()
     {
-        //
+        $categoryList = $this->postService->getCategoryList();
+        return view('post.create', compact('categoryList'));
     }
 
     /**
@@ -34,7 +44,8 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $postId = $this->postService->store($request)->id;
+        return redirect(route('post.show', $postId))->with('message', 'success');
     }
 
     /**
@@ -43,9 +54,9 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(\App\Post $post)
     {
-        //
+        return view('post.show', compact('post'));
     }
 
     /**
@@ -54,9 +65,11 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(\App\Post $post)
     {
-        //
+        $this->authorize('own', $post);
+        $categoryList = $this->postService->getCategoryList();
+        return view('post.edit', compact('post', 'categoryList'));
     }
 
     /**
@@ -66,9 +79,11 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, \App\Post $post)
     {
-        //
+        $this->authorize('own', $post);
+        $this->postService->update($request, $post);
+        return redirect(route('post.show', $post->id))->with('message', 'success');
     }
 
     /**
@@ -77,8 +92,9 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(\App\Post $post)
     {
+        $this->authorize('own', $post);
         //
     }
 }
