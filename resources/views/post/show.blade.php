@@ -5,7 +5,7 @@
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <div class="card">
-                    <div class="card-header">{{ __('PostShow') }}</div>
+                    <div class="card-header bg-primary">{{ __('PostShow') }}</div>
                     <div class="card-body">
                         <div class="form-group row">
                             <label for="title" class="col-md-4 col-form-label text-md-right">{{ __('Title') }}</label>
@@ -28,16 +28,27 @@
                             </div>
                         </div>
                         @can('own', $post)
-                        <div class="form-group row mb-0">
-                            <div class="col-md-6 offset-md-4">
-                                <a class="btn btn-primary" href="{{route('post.edit', $post->id)}}"
-                                   role="button">edit</a>
+                            <div class="form-group row mb-0">
+                                <div class="col-md-6 offset-md-4">
+                                    <a class="btn btn-primary" href="{{route('post.edit', $post->id)}}"
+                                       role="button">edit</a>
+                                    <a class="btn btn-danger" href="{{route('post.destroy', $post->id)}}"
+                                       role="button"
+                                       onclick="event.preventDefault();document.getElementById('delete-form').submit();">destroy</a>
+                                    <form id="delete-form" method="post" action="{{route('post.destroy', $post->id)}}"
+                                          style="display: none;">
+                                        @csrf
+                                        @method('DELETE')
+                                    </form>
+                                </div>
                             </div>
-                        </div>
                         @endcan
                     </div>
                 </div>
+
+
             </div>
         </div>
+    </div>
     </div>
 @endsection

@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use App\Post as PostModel;
 
 class PostService
 {
@@ -18,59 +17,33 @@ class PostService
         $this->categoryList = ['event', 'sports', 'daily'];
     }
 
-    public function index(String $category)
+    public function index()
     {
-        $validator = Validator::make(compact('category'), [
-           'category' => [Rule::in($this->categoryList)],
-        ])->validate();
-
-//        return $this->postModel->index($validator->valid()['category']);
+        dd(\App\Post::paginate(5));
+        $postList = \App\Post::paginate(5);
     }
 
-    public function store(Request $request)
+    public function store(\App\Http\Requests\PostRequest $request)
     {
-        $validateData = $request->validate([
-            'title' => 'bail|required|between:5,255',
-            'content' => 'bail|required|between:5,255',
-            'category' => [
-                Rule::in($this->categoryList)
-            ],
-        ]) + ['user_id' => Auth::id()];
-
-        return PostModel::create($validateData);
+        $validateData = $request->all() + ['user_id' => Auth::id()];
+        return \App\Post::create($validateData);
     }
 
-//    public function show(\App\Post $post)
-//    {
-//        $validator = Validator::make(compact('id'), [
-//            'id' => 'bail|required|Integer|exists:posts'
-//        ]);
-//
-//        if ($validator->fails()) {
-//            return $validator->errors();
-//        }
-//        return $this->postModel->show($post->id);
-//    }
-
-//    public function edit(\App\Post $post)
-//    {
-//    }
-
-    public function update(Request $request, \App\Post $post)
+    public function show(\App\Post $post)
     {
-        $validateData = $request->validate([
-            'title' => 'bail|required|between:5,255',
-            'content' => 'bail|required|between:5,255',
-            'category' => [
-                Rule::in($this->categoryList)
-            ],
-        ]);
-
-        return $post->update($validateData);
     }
 
-    public function getCategoryList()
+    public function edit(\App\Post $post)
     {
-        return $this->categoryList;
+    }
+
+    public function update(\App\Http\Requests\PostRequest $request, \App\Post $post)
+    {
+        return $post->update($request->all());
+    }
+
+    public function destroy(\App\Post $post)
+    {
+        return $post->delete();
     }
 }
