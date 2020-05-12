@@ -12,4 +12,10 @@ class Post extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function getPaginate()
+    {
+        return $this->with('user')->paginate(10);
+    }
+
 }

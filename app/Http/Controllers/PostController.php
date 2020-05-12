@@ -2,51 +2,53 @@
 
 namespace App\Http\Controllers;
 
-use Brick\Math\BigInteger;
-use Illuminate\Http\Request;
-use App\Http\Service\PostService;
+use App\Http\Requests\PostRequest;
+use App\Http\Services\PostService;
+use App\Http\Services\CategoryService;
+use App\Post;
 
 class PostController extends Controller
 {
     private $postService;
-
+    private $categoryService;
     public function __construct()
     {
         $this->middleware('auth')->except('index', 'show');
         $this->postService = new PostService;
+        $this->categoryService = new CategoryService;
     }
 
     public function index()
     {
-        $postList = \App\Post::with('user')->paginate(10);
+        $postList = $this->postService->index();
         return view('post.index', compact('postList'));
     }
 
     public function create()
     {
-        $categoryList = config('category');
+        $categoryList = $this->categoryService->getList();
         return view('post.create', compact('categoryList'));
     }
 
-    public function store(\App\Http\Requests\PostRequest $request)
+    public function store(PostRequest $request)
     {
         $postId = $this->postService->store($request)->id;
         return redirect(route('post.show', $postId))->with('message', 'success');
     }
 
-    public function show(\App\Post $post)
+    public function show(Post $post)
     {
         return view('post.show', compact('post'));
     }
 
-    public function edit(\App\Post $post)
+    public function edit(Post $post)
     {
         $this->authorize('own', $post);
-        $categoryList = config('category');
+        $categoryList = $this->categoryService->getList();
         return view('post.edit', compact('post', 'categoryList'));
     }
 
-    public function update(\App\Http\Requests\PostRequest $request, \App\Post $post)
+    public function update(PostRequest $request, Post $post)
     {
         $this->authorize('own', $post);
         $this->postService->update($request, $post);
@@ -54,10 +56,10 @@ class PostController extends Controller
     }
 
 
-    public function destroy(\App\Post $post)
+    public function destroy(Post $post)
     {
         $this->authorize('own', $post);
         $this->postService->destroy($post);
-        return redirect('/home')->with('message', 'success');
+        return redirect(route('post.index'))->with('message', 'success');
     }
 }
