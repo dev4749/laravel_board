@@ -2,21 +2,31 @@
 
 namespace App\Http\Services;
 
-use Illuminate\Http\Request;
-use App\Http\Requests\PostRequest;
 use Illuminate\Support\Facades\Auth;
-
+use App\Http\Requests\CommentRequest;
+use App\Post;
+use App\Comment;
 class CommentService
 {
-    public function index()
+    private $commentModel;
+
+    public function __construct()
     {
+        $this->commentModel = new Comment;
     }
 
-    public function store(\App\Http\Requests\PostRequest $request)
+    public function getPagniate(Post $post)
     {
+        return $this->commentModel->getPaginate($post);
     }
 
-    public function update(\App\Http\Requests\PostRequest $request, \App\Post $post)
+    public function store(Post $post, CommentRequest $request)
+    {
+        $comment = ['post_id' => $post->id, 'user_id' => Auth::id()] + $request->all();
+        return $this->commentModel->create($comment);
+    }
+
+    public function update(CommentRequest $request, \App\Post $post)
     {
     }
 

@@ -46,9 +46,65 @@
                     </div>
                 </div>
 
+                <br/>
+                <div class="card">
+                    <div class="card-header">{{ __('CommentCreate') }}</div>
+                    <div class="card-body">
+                        <div class="comment-wrapper">
+                            <div class="text-center">
+                                <textarea class="form-control" placeholder="write a comment..." rows="3"
+                                          name="content"></textarea>
+                                <br>
+                                <button id="create_button" type="button" class="btn btn-primary">Comment</button>
+                                <div class="clearfix"></div>
+                                <hr>
+                            </div>
 
+                            <ul id="comment_list">
+                                @foreach($commentList as $comment)
+                                    <li>
+                                        <strong class="text-success">{{$comment->user->name}}</strong>
+                                        <span class="text-muted pull-right">
+                                                    <small class="text-muted">{{$comment->created_at}}</small>
+                                                </span>
+                                        @can('own', $comment)
+                                            <strong><a class="text-info" href="#">@edit</a></strong>
+                                            <strong><a class="text-danger" href="#">@delete</a></strong>
+                                        @endcan
+                                        <p>{{$comment->content}}</p>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
     </div>
+    <!-- Scripts -->
+    <script src="{{ asset('js/app.js') }}"></script>
+    <script>
+        $("#create_button").on("click", function () {
+            $.ajax({
+                headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+                method: "POST",
+                url: "{{$post->id}}/comment",
+                data: {content: $("[name=content]").val()}
+            }).then((data, textStatus, jqXHR) => {
+                var template = "<li>";
+                    template+= "    <strong class='text-success'>{{Auth::user()->name}}</strong>";
+                    template+= "    <span class='text-muted pull-right'>";
+                    template+= "        <small class='text-muted'>(" + data.created_at + ")</small>";
+                    template+= "    </span>";
+                    template+= "    <strong><a class='text-info' href='#'>@edit</a></strong>";
+                    template+= "    <strong><a class='text-danger' href='#'>@delete</a></strong>";
+                    template+= "    <p>" + data.content + "</p>";
+                    template+= "</li>";
+                $("#comment_list").prepend(template);
+            }, (jqXHR, textStatus, errorThrown) => {
+                console.log("error");
+            })
+        });
+    </script>
 @endsection

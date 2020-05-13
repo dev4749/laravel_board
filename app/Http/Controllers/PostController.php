@@ -5,22 +5,25 @@ namespace App\Http\Controllers;
 use App\Http\Requests\PostRequest;
 use App\Http\Services\PostService;
 use App\Http\Services\CategoryService;
+use App\Http\Services\CommentService;
 use App\Post;
 
 class PostController extends Controller
 {
     private $postService;
     private $categoryService;
+    private $commentService;
     public function __construct()
     {
         $this->middleware('auth')->except('index', 'show');
         $this->postService = new PostService;
         $this->categoryService = new CategoryService;
+        $this->commentService = new CommentService;
     }
 
     public function index()
     {
-        $postList = $this->postService->index();
+        $postList = $this->postService->getPaginate();
         return view('post.index', compact('postList'));
     }
 
@@ -38,7 +41,8 @@ class PostController extends Controller
 
     public function show(Post $post)
     {
-        return view('post.show', compact('post'));
+        $commentList = $this->commentService->getPagniate($post);
+        return view('post.show', compact('post', 'commentList'));
     }
 
     public function edit(Post $post)

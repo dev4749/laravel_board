@@ -18,4 +18,8 @@ class Post extends Model
         return $this->with('user')->paginate(10);
     }
 
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
 }

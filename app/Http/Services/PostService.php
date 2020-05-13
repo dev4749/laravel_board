@@ -15,7 +15,7 @@ class PostService
         $this->postModel = new Post;
     }
 
-    public function index()
+    public function getPaginate()
     {
         return $this->postModel->getPaginate();
     }

@@ -22,6 +22,7 @@ class AuthServiceProvider extends ServiceProvider
          * 예를들어, 모델 이름이 User 이라면 Policy는 UserPolicy 클래스의 이름으로 이용하면 됩니다.
          */
 //        \App\Post::class => \App\Policies\PostPolicy::class,
+//        \App\Comment::class => \App\Policies\CommentPolicy::class,
     ];
 
     /**
