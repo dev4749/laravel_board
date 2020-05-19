@@ -15,7 +15,10 @@ class PostController extends Controller
     private $commentService;
     public function __construct()
     {
+        // 1. 로그인 여부 체크
         $this->middleware('auth')->except('index', 'show');
+        // 2. 권한 체크
+        $this->middleware('can:own,post')->only('edit', 'update', 'destroy');
         $this->postService = new PostService;
         $this->categoryService = new CategoryService;
         $this->commentService = new CommentService;
@@ -47,22 +50,18 @@ class PostController extends Controller
 
     public function edit(Post $post)
     {
-        $this->authorize('own', $post);
         $categoryList = $this->categoryService->getList();
         return view('post.edit', compact('post', 'categoryList'));
     }
 
     public function update(PostRequest $request, Post $post)
     {
-        $this->authorize('own', $post);
         $this->postService->update($request, $post);
         return redirect(route('post.show', $post->id))->with('message', 'success');
     }
 
-
     public function destroy(Post $post)
     {
-        $this->authorize('own', $post);
         $this->postService->destroy($post);
         return redirect(route('post.index'))->with('message', 'success');
     }

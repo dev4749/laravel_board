@@ -62,13 +62,12 @@
 
                             <ul id="comment_list">
                                 @foreach($commentList as $comment)
-                                    <li>
+                                    <li data-comment-id="{{$comment->id}}">
                                         <strong class="text-success">{{$comment->user->name}}</strong>
                                         <span class="text-muted pull-right">
-                                                    <small class="text-muted">{{$comment->created_at}}</small>
-                                                </span>
+                                            <small class="text-muted">({{$comment->created_at}})</small>
+                                        </span>
                                         @can('own', $comment)
-                                            <strong><a class="text-info" href="#">@edit</a></strong>
                                             <strong><a class="text-danger" href="#">@delete</a></strong>
                                         @endcan
                                         <p>{{$comment->content}}</p>
@@ -81,30 +80,56 @@
             </div>
         </div>
     </div>
-    </div>
-    <!-- Scripts -->
-    <script src="{{ asset('js/app.js') }}"></script>
     <script>
+        $.ajaxSetup({
+            headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+            method: "POST",
+        });
+
         $("#create_button").on("click", function () {
             $.ajax({
-                headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
-                method: "POST",
                 url: "{{$post->id}}/comment",
                 data: {content: $("[name=content]").val()}
             }).then((data, textStatus, jqXHR) => {
-                var template = "<li>";
-                    template+= "    <strong class='text-success'>{{Auth::user()->name}}</strong>";
-                    template+= "    <span class='text-muted pull-right'>";
-                    template+= "        <small class='text-muted'>(" + data.created_at + ")</small>";
-                    template+= "    </span>";
-                    template+= "    <strong><a class='text-info' href='#'>@edit</a></strong>";
-                    template+= "    <strong><a class='text-danger' href='#'>@delete</a></strong>";
-                    template+= "    <p>" + data.content + "</p>";
-                    template+= "</li>";
+                var template = "<li data-comment-id='" + data.id + "'>";
+                template += "    <strong class='text-success'>" + data.user_name + "</strong>";
+                template += "    <span class='text-muted pull-right'>";
+                template += "        <small class='text-muted'>(" + data.created_at + ")</small>";
+                template += "    </span>";
+                template += "    <strong><a class='text-danger' href='#'>@delete</a></strong>";
+                template += "    <p>" + data.content + "</p>";
+                template += "</li>";
                 $("#comment_list").prepend(template);
             }, (jqXHR, textStatus, errorThrown) => {
-                console.log("error");
+                errorResult(jqXHR);
             })
         });
+
+        $("#comment_list").on("click", "li .text-danger", function (e) {
+            e.preventDefault();
+            var li = $(this).closest('li');
+            var comment_id = $(li).data('comment-id');
+
+            $.ajax({
+                url: "/post/{{$post->id}}/comment/" + comment_id,
+                data: {
+                    _method: "DELETE",
+                }
+            }).then((data, textStatus, jqXHR) => {
+                $(li).remove();
+            }, (jqXHR, textStatus, errorThrown) => {
+                errorResult(jqXHR);
+            })
+        });
+
+        function errorResult(jqXHR)
+        {
+            var response = jqXHR.responseJSON;
+            var message = response.errors != undefined ? response.errors.content[0] : response.message;
+            alert(message);
+            if (jqXHR.status == 401) {
+                location.href = "{{route('login')}}";
+            }
+        }
     </script>
 @endsection

@@ -23,14 +23,15 @@ class CommentService
     public function store(Post $post, CommentRequest $request)
     {
         $comment = ['post_id' => $post->id, 'user_id' => Auth::id()] + $request->all();
-        return $this->commentModel->create($comment);
+        return $this->commentModel->create($comment)->setAttribute('user_name', Auth::user()->name);
     }
 
     public function update(CommentRequest $request, \App\Post $post)
     {
     }
 
-    public function destroy(\App\Post $post)
+    public function destroy(Comment $comment)
     {
+        return $comment->delete();
     }
 }
